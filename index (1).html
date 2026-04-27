@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Minimal Photostrip Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-color: #f7f7f7;
+    --surface-color: #ffffff;
+    --text-primary: #111111;
+    --text-secondary: #666666;
+    --border-color: #e5e5e5;
+    --accent-color: #111111;
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
+    --shadow-md: 0 12px 32px rgba(0,0,0,0.08);
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-color); font-family: 'Inter', 'Noto Sans TC', sans-serif; color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+  
+  /* ── View Manager ── */
+  .view { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; padding: 2rem; animation: fadeIn 0.4s ease-out; overflow-y: auto; overflow-x: hidden; }
+  .view.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── 視圖 1: Start (極簡設定頁) ── */
+  .start-container { background: var(--surface-color); padding: 3rem; border-radius: 16px; box-shadow: var(--shadow-md); width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 2rem; align-items: stretch; }
+  @media(min-width: 600px) { .start-container { flex-direction: row; } }
+  
+  .start-preview-pane { flex: 1; background: var(--bg-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 2rem; min-height: 300px; }
+  .start-controls-pane { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  
+  .start-title { font-size: 2.5rem; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 2rem; text-align: left; }
+  
+  .config-group { margin-bottom: 1.5rem; }
+  .config-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem; display: block; }
+  
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .option-btn { padding: 1rem; font-size: 0.95rem; font-weight: 500; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-color); cursor: pointer; color: var(--text-primary); transition: all 0.2s; }
+  .option-btn:hover { border-color: #999; }
+  .option-btn.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
+
+  .color-picker { display: flex; gap: 12px; justify-content: flex-start; }
+  .color-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; position: relative; }
+  .color-circle:hover { transform: scale(1.1); }
+  .color-circle.active::after { content: ''; position: absolute; inset: -5px; border: 2px solid var(--accent-color); border-radius: 50%; }
+
+  .btn-start { width: 100%; background: var(--accent-color); color: white; border: none; padding: 1.2rem; font-size: 1.1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-top: auto; }
+  .btn-start:hover { opacity: 0.85; }
+
+  /* 開始頁預覽組件 */
+  .preview-strip { padding: 10px 10px 30px 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); width: 120px; transition: background-color 0.3s ease; }
+  .preview-strip-slot { width: 100%; aspect-ratio: 3/2; background: rgba(255,255,255,0.7); border: 1px dashed rgba(0,0,0,0.1); }
+
+  /* ── 視圖 2: Capture ── */
+  .capture-layout { display: flex; flex-direction: column; gap: 2rem; width: 100%; max-width: 1000px; height: 100%; align-items: center; justify-content: center; }
+  @media(min-width: 800px) { .capture-layout { flex-direction: row; } }
+  
+  .capture-main { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .video-wrapper { position: relative; width: 100%; max-width: 640px; aspect-ratio: 4/3; background: #000; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md); }
+  #cam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  
+  /* 倒數計時 */
+  .countdown-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
+  .countdown-text { font-size: 8rem; color: white; font-weight: 600; text-shadow: 0 4px 24px rgba(0,0,0,0.4); opacity: 0; transform: scale(0.5); transition: 0.2s; }
+  .countdown-text.pop { opacity: 1; transform: scale(1); animation: popAnim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  @keyframes popAnim { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  #flash { position: absolute; inset: 0; background: white; opacity: 0; z-index: 20; pointer-events: none; transition: opacity 0.1s; }
+
+  /* 操作區 */
+  .action-row { display: flex; gap: 1rem; margin-top: 1.5rem; width: 100%; max-width: 640px; }
+  .btn-action { flex: 1; background: var(--surface-color); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; }
+  .btn-action:hover { border-color: var(--accent-color); }
+  .btn-primary { background: var(--accent-color); color: white; border: none; }
+  .btn-primary:hover { background: #333; }
+
+  /* 掉落預覽列 */
+  .timeline { display: flex; flex-direction: row; gap: 12px; background: var(--surface-color); padding: 1rem; border-radius: 12px; box-shadow: var(--shadow-sm); }
+  @media(min-width: 800px) { .timeline { flex-direction: column; } }
+  .film-slot { width: 80px; aspect-ratio: 3/2; background: #eee; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid var(--border-color); }
+  .film-slot img { width: 100%; height: 100%; object-fit: cover; }
+  .slot-idx { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.6); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; }
+  
+  /* 掉落動畫實體 (拍照時) */
+  .anim-drop-photo { position: absolute; z-index: 100; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); pointer-events: none; transform-origin: center; animation: dropToSlot 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+  @keyframes dropToSlot { 0% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } 100% { transform: scale(0.15) translateY(300px) rotate(8deg); opacity: 0; } }
+
+  /* ── 視圖 3: Edit (編輯微調) ── */
+  .edit-layout { display: flex; flex-direction: column; gap: 2rem; width: 100%; max-width: 1200px; height: 100%; }
+  @media(min-width: 900px) { .edit-layout { flex-direction: row; align-items: flex-start; } }
+  
+  .canvas-container { flex: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; position: relative; }
+  #editor-canvas { max-width: 100%; max-height: 75vh; box-shadow: var(--shadow-md); cursor: move; touch-action: none; background: transparent; }
+  .hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem; background: var(--surface-color); padding: 8px 16px; border-radius: 20px; box-shadow: var(--shadow-sm); }
+  
+  .tools-panel { flex: 1; width: 100%; max-width: 360px; background: var(--surface-color); padding: 2rem; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 1.5rem; }
+  .tools-title { font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; }
+  
+  /* ── 視圖 4: Pickup (完成掉落動畫) ── */
+  .pickup-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; position: relative; }
+  .pickup-title { font-size: 1.8rem; font-weight: 600; margin-bottom: 2rem; color: var(--text-primary); text-align: center; opacity: 0; transition: opacity 0.5s 1s; }
+  .pickup-title.show { opacity: 1; }
+  
+  .photo-result-wrapper { perspective: 1000px; margin-bottom: 2rem; position: relative; z-index: 10; }
+  .photo-result { width: 100%; max-width: 340px; height: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); transform-origin: top center; opacity: 0; border-radius: 2px; }
+  
+  /* 模擬從頂部掉落的物理動畫 */
+  .photo-result.animate { animation: dropAndSwing 1.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+  @keyframes dropAndSwing {
+    0% { transform: translateY(-120vh) rotateX(30deg) rotateZ(-15deg); opacity: 1; }
+    50% { transform: translateY(5vh) rotateX(-10deg) rotateZ(5deg); opacity: 1; }
+    75% { transform: translateY(-2vh) rotateX(5deg) rotateZ(-2deg); opacity: 1; }
+    100% { transform: translateY(0) rotateX(0deg) rotateZ(0deg); opacity: 1; }
+  }
+
+  .pickup-actions { display: flex; gap: 1rem; opacity: 0; transition: opacity 0.5s; transform: translateY(20px); }
+  .pickup-actions.show { opacity: 1; transform: translateY(0); }
+
+  /* Toast 通知 */
+  #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-primary); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 500; font-size: 0.9rem; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999; box-shadow: var(--shadow-md); }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- View 1: 模板與設定 -->
+<div id="view-start" class="view active">
+  <div class="start-container">
+    
+    <div class="start-preview-pane">
+      <div id="start-preview-strip" class="preview-strip">
+        <!-- 動態預覽插槽 -->
+      </div>
+    </div>
+
+    <div class="start-controls-pane">
+      <h1 class="start-title">Minimal Booth.</h1>
+      
+      <div class="config-group">
+        <span class="config-label">相紙樣式 (Frame Style)</span>
+        <div class="grid-2" id="style-selector">
+          <button class="option-btn active" data-style="classic">經典版型 Classic</button>
+          <!-- 預留擴充樣式 -->
+        </div>
+      </div>
+      
+      <div class="config-group">
+        <span class="config-label">相格數量 (Grid Count)</span>
+        <div class="grid-2" id="grid-selector">
+          <button class="option-btn active" data-count="3">3 格排版</button>
+          <button class="option-btn" data-count="4">4 格排版</button>
+        </div>
+      </div>
+
+      <div class="config-group">
+        <span class="config-label">相紙底色 (Frame Color)</span>
+        <div class="color-picker" id="color-selector">
+          <div class="color-circle active" data-color="#A98259" style="background:#A98259" title="Khaki"></div>
+          <div class="color-circle" data-color="#ffffff" style="background:#ffffff" title="White"></div>
+          <div class="color-circle" data-color="#111111" style="background:#111111" title="Black"></div>
+          <div class="color-circle" data-color="#f0f0f0" style="background:#f0f0f0" title="Light Gray"></div>
+          <div class="color-circle" data-color="#E8D8CE" style="background:#E8D8CE" title="Warm Beige"></div>
+        </div>
+      </div>
+
+      <button class="btn-start" onclick="app.initTemplate()">建立專屬拍貼 ➝</button>
+    </div>
+  </div>
+</div>
+
+<!-- View 2: 拍攝與匯入 -->
+<div id="view-capture" class="view">
+  <div class="capture-layout">
+    <div class="capture-main">
+      <div class="video-wrapper" id="cap-container">
+        <video id="cam-video" autoplay playsinline></video>
+        <div class="countdown-overlay"><div class="countdown-text" id="countdown">3</div></div>
+        <div id="flash"></div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-action btn-primary" id="btn-snap">📷 拍攝 (<span id="cap-current">1</span>/<span id="cap-total">3</span>)</button>
+        <label class="btn-action">
+          📁 匯入照片
+          <input type="file" id="direct-upload" accept="image/*" multiple style="display:none">
+        </label>
+      </div>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+  </div>
+</div>
+
+<!-- View 3: 編輯與微調 -->
+<div id="view-edit" class="view">
+  <div class="edit-layout">
+    <div class="canvas-container">
+      <canvas id="editor-canvas"></canvas>
+      <div class="hint">💡 游標拖曳可移動相片位置，滾輪/雙指可縮放大小</div>
+    </div>
+    
+    <div class="tools-panel">
+      <div class="tools-title">調整與輸出</div>
+      
+      <div class="config-group">
+        <span class="config-label" style="margin-bottom:0.5rem">色調風格 (Filter)</span>
+        <div class="grid-2" id="filter-group">
+          <button class="option-btn active" data-filter="none">原圖 Normal</button>
+          <button class="option-btn" data-filter="grayscale(100%) contrast(1.1)">黑白 B&W</button>
+          <button class="option-btn" data-filter="sepia(40%) contrast(1.1) saturate(0.8)">復古 Vintage</button>
+          <button class="option-btn" data-filter="saturate(1.3) contrast(1.05)">鮮豔 Vivid</button>
+        </div>
+      </div>
+      
+      <!-- 移除亮度拉霸，直接輸出 -->
+      <button class="btn-start" id="btn-export" style="margin-top: auto;">完成並列印 ⬇</button>
+      <button class="btn-action" onclick="location.reload()" style="margin-top: 10px; width:100%;">重新製作</button>
+    </div>
+  </div>
+</div>
+
+<!-- View 4: Pickup (完成掉落動畫) -->
+<div id="view-pickup" class="view">
+  <div class="pickup-layout">
+    <h2 class="pickup-title" id="pickup-title">✨ 您的專屬拍貼已印出 ✨</h2>
+    
+    <div class="photo-result-wrapper">
+      <!-- 掉落的相片實體 -->
+      <img id="final-photo" class="photo-result" src="" alt="Photostrip">
+    </div>
+
+    <div class="pickup-actions" id="pickup-actions">
+      <button class="btn-action btn-primary" onclick="app.downloadFinalImage()" style="padding: 1rem 2rem;">
+        📥 儲存至裝置
+      </button>
+      <button class="btn-action" onclick="location.reload()" style="padding: 1rem 2rem;">
+        🔄 再拍一次
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+class MinimalBoothEngine {
+  constructor() {
+    this.state = {
+      frameStyle: 'classic',
+      slotsCount: 3,
+      frameColor: '#A98259', 
+      holes: [], 
+      photos: [], 
+      currentSlot: 0,
+      stream: null,
+      filter: 'none',
+      dragIdx: -1,
+      lastP: {x:0, y:0},
+      needsUpdate: false,
+      canvasW: 0,
+      canvasH: 0,
+      finalDataUrl: null
+    };
+
+    this.canvas = document.getElementById('editor-canvas');
+    this.ctx = this.canvas.getContext('2d', { alpha: false });
+    
+    this.bindEvents();
+    this.updateStartPreview(); // 初始化預覽畫面
+    this.renderLoop();
+  }
+
+  bindEvents() {
+    document.querySelectorAll('#style-selector .option-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#style-selector .option-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        this.state.frameStyle = e.target.dataset.style;
+        this.updateStartPreview();
+      });
+    });
+
+    document.querySelectorAll('#grid-selector .option-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#grid-selector .option-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        this.state.slotsCount = parseInt(e.target.dataset.count, 10);
+        this.updateStartPreview();
+      });
+    });
+
+    document.querySelectorAll('#color-selector .color-circle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#color-selector .color-circle').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        this.state.frameColor = e.target.dataset.color;
+        this.updateStartPreview();
+      });
+    });
+
+    document.getElementById('btn-snap').addEventListener('click', () => this.startSnapSequence());
+    document.getElementById('direct-upload').addEventListener('change', e => this.handleDirectUpload(e.target.files));
+
+    this.canvas.addEventListener('mousedown', e => this.onStart(e));
+    window.addEventListener('mousemove', e => this.onMove(e));
+    window.addEventListener('mouseup', () => this.state.dragIdx = -1);
+    this.canvas.addEventListener('wheel', e => this.onWheel(e), { passive: false });
+    
+    this.canvas.addEventListener('touchstart', e => this.onStart(e), { passive: false });
+    this.canvas.addEventListener('touchmove', e => this.onMove(e), { passive: false });
+    this.canvas.addEventListener('touchend', () => this.state.dragIdx = -1);
+
+    document.querySelectorAll('#filter-group .option-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#filter-group .option-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        this.state.filter = e.target.dataset.filter;
+        this.requestUpdate();
+      });
+    });
+
+    document.getElementById('btn-export').addEventListener('click', () => this.triggerPickupAnimation());
+  }
+
+  toast(msg) {
+    const el = document.getElementById('toast');
+    el.innerText = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  switchView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(`view-${viewId}`).classList.add('active');
+  }
+
+  /* ── 更新開始頁面預覽 ── */
+  updateStartPreview() {
+    const strip = document.getElementById('start-preview-strip');
+    strip.style.backgroundColor = this.state.frameColor;
+    strip.innerHTML = '';
+    
+    for (let i = 0; i < this.state.slotsCount; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'preview-strip-slot';
+      strip.appendChild(slot);
+    }
+  }
+
+  /* ── 核心：純程式碼動態生成模板 ── */
+  initTemplate() {
+    const N = this.state.slotsCount;
+    
+    const W_total = 1200;
+    const paddingX = 100;
+    const gap = 60;
+    const paddingTop = 120;
+    const paddingBottom = 280; 
+    
+    const holeW = W_total - (paddingX * 2);
+    const holeH = Math.round(holeW * (2 / 3)); 
+    
+    const H_total = paddingTop + (holeH * N) + (gap * (N - 1)) + paddingBottom;
+
+    this.state.canvasW = W_total;
+    this.state.canvasH = H_total;
+    this.state.holes = [];
+
+    for(let i=0; i<N; i++) {
+      this.state.holes.push({
+        x: paddingX,
+        y: paddingTop + (holeH + gap) * i,
+        w: holeW,
+        h: holeH
+      });
+    }
+
+    this.initCaptureTimeline();
+    this.switchView('capture');
+    this.openCamera();
+  }
+
+  initCaptureTimeline() {
+    const timeline = document.getElementById('timeline');
+    timeline.innerHTML = '';
+    this.state.holes.forEach((_, i) => {
+      const slot = document.createElement('div');
+      slot.className = 'film-slot';
+      slot.innerHTML = `<span class="slot-idx">0${i+1}</span>`;
+      timeline.appendChild(slot);
+    });
+    document.getElementById('cap-total').innerText = this.state.holes.length;
+    this.state.currentSlot = 0;
+    this.state.photos = [];
+  }
+
+  async openCamera() {
+    try {
+      this.state.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 } } });
+      document.getElementById('cam-video').srcObject = this.state.stream;
+    } catch(e) { this.toast("相機開啟失敗，請直接使用上傳功能。"); }
+  }
+
+  async startSnapSequence() {
+    const btn = document.getElementById('btn-snap');
+    btn.disabled = true;
+    
+    const cd = document.getElementById('countdown');
+    for(let i=3; i>=1; i--) {
+      cd.innerText = i;
+      cd.classList.remove('pop');
+      void cd.offsetWidth; 
+      cd.classList.add('pop');
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    cd.classList.remove('pop');
+    
+    const flash = document.getElementById('flash');
+    flash.style.opacity = '1';
+    setTimeout(() => flash.style.opacity = '0', 80);
+
+    const video = document.getElementById('cam-video');
+    const cvs = document.createElement('canvas');
+    cvs.width = video.videoWidth; cvs.height = video.videoHeight;
+    const ctx = cvs.getContext('2d');
+    ctx.translate(cvs.width, 0); ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+
+    const img = new Image();
+    img.src = cvs.toDataURL('image/jpeg');
+    await img.decode();
+
+    this.processImage(img);
+  }
+
+  async handleDirectUpload(files) {
+    const fileArr = Array.from(files);
+    for(const file of fileArr) {
+      if(this.state.currentSlot >= this.state.holes.length) break;
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      await img.decode();
+      this.processImage(img, false);
+    }
+  }
+
+  processImage(img, doAnimation = true) {
+    const hole = this.state.holes[this.state.currentSlot];
+    
+    const scaleX = hole.w / img.width;
+    const scaleY = hole.h / img.height;
+    const baseScale = Math.max(scaleX, scaleY);
+
+    this.state.photos.push({
+      rawImg: img,
+      x: hole.x, y: hole.y, w: hole.w, h: hole.h,
+      baseScale: baseScale,
+      scale: 1, 
+      ox: 0, oy: 0
+    });
+
+    const timeline = document.getElementById('timeline');
+    const slot = timeline.children[this.state.currentSlot];
+    
+    if (doAnimation) {
+      const animEl = document.createElement('img');
+      animEl.src = img.src;
+      animEl.className = 'anim-drop-photo';
+      
+      const rect = document.getElementById('cap-container').getBoundingClientRect();
+      
+      animEl.style.left = `${rect.left}px`;
+      animEl.style.top = `${rect.top}px`;
+      animEl.style.width = `${rect.width}px`;
+      animEl.style.height = `${rect.height}px`;
+      
+      document.body.appendChild(animEl);
+      setTimeout(() => {
+        animEl.remove();
+        slot.innerHTML += `<img src="${img.src}">`;
+      }, 800);
+    } else {
+      slot.innerHTML += `<img src="${img.src}">`;
+    }
+
+    this.state.currentSlot++;
+    
+    if(this.state.currentSlot >= this.state.holes.length) {
+      if(this.state.stream) this.state.stream.getTracks().forEach(t => t.stop());
+      setTimeout(() => this.startEdit(), doAnimation ? 800 : 0);
+    } else {
+      document.getElementById('cap-current').innerText = this.state.currentSlot + 1;
+      document.getElementById('btn-snap').disabled = false;
+    }
+  }
+
+  /* ── 編輯器渲染 ── */
+  startEdit() {
+    this.canvas.width = this.state.canvasW;
+    this.canvas.height = this.state.canvasH;
+    
+    const aspect = this.state.canvasW / this.state.canvasH;
+    this.canvas.style.aspectRatio = aspect;
+
+    this.switchView('edit');
+    this.requestUpdate();
+  }
+
+  requestUpdate() { this.state.needsUpdate = true; }
+  renderLoop() {
+    if (this.state.needsUpdate) { this.draw(); this.state.needsUpdate = false; }
+    requestAnimationFrame(() => this.renderLoop());
+  }
+
+  draw() {
+    const { ctx, canvas, state } = this;
+    
+    ctx.fillStyle = state.frameColor; 
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const filterStr = state.filter;
+
+    state.photos.forEach(p => {
+      ctx.save();
+      ctx.beginPath(); 
+      ctx.rect(p.x, p.y, p.w, p.h); 
+      ctx.clip();
+      
+      if (filterStr !== 'none') ctx.filter = filterStr;
+
+      const rw = p.rawImg.width * p.baseScale * p.scale;
+      const rh = p.rawImg.height * p.baseScale * p.scale;
+      
+      const cx = p.x + p.w / 2;
+      const cy = p.y + p.h / 2;
+      const dx = cx + p.ox - rw / 2;
+      const dy = cy + p.oy - rh / 2;
+
+      ctx.drawImage(p.rawImg, dx, dy, rw, rh);
+      ctx.restore();
+    });
+  }
+
+  /* ── 互動操作 ── */
+  getCoord(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scale = this.canvas.width / rect.width;
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    return { x: (clientX - rect.left) * scale, y: (clientY - rect.top) * scale };
+  }
+
+  // 新增：邊界限制演算 (防止相片被拖出或縮小至露出背景)
+  clampPhoto(ph) {
+    // 1. 最小縮放限制 (1 代表剛好 cover 洞口)
+    if (ph.scale < 1) ph.scale = 1;
+
+    // 2. 計算當前渲染實際尺寸
+    const rw = ph.rawImg.width * ph.baseScale * ph.scale;
+    const rh = ph.rawImg.height * ph.baseScale * ph.scale;
+
+    // 3. 計算最大允許偏移量 (照片尺寸減去洞口尺寸的差值一半)
+    const maxOx = (rw - ph.w) / 2;
+    const maxOy = (rh - ph.h) / 2;
+
+    // 4. 鎖死越界的座標
+    if (ph.ox > maxOx) ph.ox = maxOx;
+    if (ph.ox < -maxOx) ph.ox = -maxOx;
+    if (ph.oy > maxOy) ph.oy = maxOy;
+    if (ph.oy < -maxOy) ph.oy = -maxOy;
+  }
+
+  onStart(e) {
+    if (e.type === 'touchstart') e.preventDefault();
+    const p = this.getCoord(e);
+    this.state.dragIdx = this.state.photos.findIndex(h => p.x >= h.x && p.x <= h.x+h.w && p.y >= h.y && p.y <= h.y+h.h);
+    this.state.lastP = p;
+  }
+
+  onMove(e) {
+    if (this.state.dragIdx === -1) return;
+    if (e.type === 'touchmove') e.preventDefault();
+    const p = this.getCoord(e);
+    const ph = this.state.photos[this.state.dragIdx];
+    
+    ph.ox += p.x - this.state.lastP.x;
+    ph.oy += p.y - this.state.lastP.y;
+    this.state.lastP = p;
+    
+    this.clampPhoto(ph); // 套用邊界限制
+    this.requestUpdate();
+  }
+
+  onWheel(e) {
+    e.preventDefault();
+    const p = this.getCoord(e);
+    const idx = this.state.photos.findIndex(h => p.x >= h.x && p.x <= h.x+h.w && p.y >= h.y && p.y <= h.y+h.h);
+    if (idx !== -1) {
+      const zoom = e.deltaY > 0 ? 0.95 : 1.05;
+      this.state.photos[idx].scale *= zoom;
+      
+      this.clampPhoto(this.state.photos[idx]); // 縮放後校正並防止越界
+      this.requestUpdate();
+    }
+  }
+
+  /* ── 觸發完成動畫與輸出 ── */
+  triggerPickupAnimation() {
+    const btn = document.getElementById('btn-export');
+    btn.disabled = true;
+    btn.innerText = 'PROCESSING...';
+
+    // 確保繪製最新狀態並擷取 Base64
+    this.draw();
+    const dataUrl = this.canvas.toDataURL('image/jpeg', 0.95);
+    this.state.finalDataUrl = dataUrl;
+
+    // 重置動畫狀態
+    const resultImg = document.getElementById('final-photo');
+    const actions = document.getElementById('pickup-actions');
+    const title = document.getElementById('pickup-title');
+    
+    resultImg.classList.remove('animate');
+    actions.classList.remove('show');
+    title.classList.remove('show');
+    resultImg.src = dataUrl;
+
+    // 切換視圖
+    this.switchView('pickup');
+
+    // 啟動掉落動畫
+    requestAnimationFrame(() => {
+      // 確保 DOM 渲染後再加 class
+      requestAnimationFrame(() => {
+        resultImg.classList.add('animate');
+        
+        // 動畫時間配合 CSS @keyframes (1.8s)
+        setTimeout(() => {
+          title.classList.add('show');
+          actions.classList.add('show');
+        }, 1800);
+      });
+    });
+  }
+
+  // 最終使用者下載
+  downloadFinalImage() {
+    if (!this.state.finalDataUrl) return;
+    const link = document.createElement('a');
+    link.download = `photostrip_${Date.now()}.jpg`;
+    link.href = this.state.finalDataUrl;
+    link.click();
+    this.toast("下載完成！快分享至限時動態吧 ✨");
+  }
+}
+
+window.onload = () => window.app = new MinimalBoothEngine();
+</script>
+</body>
+</html>
