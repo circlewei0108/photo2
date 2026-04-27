@@ -26,33 +26,36 @@
   .view.active { display: flex; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ── 視圖 1: Start (極簡設定頁) ── */
-  .start-container { background: var(--surface-color); padding: 3rem; border-radius: 16px; box-shadow: var(--shadow-md); width: 100%; max-width: 800px; display: flex; flex-direction: row; gap: 2rem; align-items: stretch; }
+  /* ── 視圖 1: Start (設定與預覽) ── */
+  .start-container { background: var(--surface-color); padding: 3rem; border-radius: 16px; box-shadow: var(--shadow-md); width: 100%; max-width: 860px; display: flex; flex-direction: row; gap: 3rem; align-items: stretch; }
   
-  .start-preview-pane { flex: 1; background: var(--bg-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 2rem; min-height: 300px; }
+  .start-preview-pane { flex: 1; background: var(--bg-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 2rem; min-height: 360px; position: relative; }
   .start-controls-pane { flex: 1; display: flex; flex-direction: column; justify-content: center; }
   
-  .start-title { font-size: 2.5rem; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 2rem; text-align: left; }
+  .start-title { font-size: 2.2rem; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 2rem; text-align: left; }
   
   .config-group { margin-bottom: 1.5rem; }
   .config-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem; display: block; }
   
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .option-btn { padding: 1rem; font-size: 0.95rem; font-weight: 500; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-color); cursor: pointer; color: var(--text-primary); transition: all 0.2s; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .option-btn { padding: 0.8rem 1rem; font-size: 0.9rem; font-weight: 500; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-color); cursor: pointer; color: var(--text-primary); transition: all 0.2s; text-align: center; }
   .option-btn:hover { border-color: #999; }
   .option-btn.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
 
   .color-picker { display: flex; gap: 12px; justify-content: flex-start; }
-  .color-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; position: relative; }
+  .color-circle { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; position: relative; }
   .color-circle:hover { transform: scale(1.1); }
-  .color-circle.active::after { content: ''; position: absolute; inset: -5px; border: 2px solid var(--accent-color); border-radius: 50%; }
+  .color-circle.active::after { content: ''; position: absolute; inset: -4px; border: 2px solid var(--accent-color); border-radius: 50%; }
 
   .btn-start { width: 100%; background: var(--accent-color); color: white; border: none; padding: 1.2rem; font-size: 1.1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-top: auto; }
-  .btn-start:hover { opacity: 0.85; }
+  .btn-start:hover:not(:disabled) { opacity: 0.85; }
+  .btn-start:disabled { background: var(--text-secondary); cursor: not-allowed; }
 
-  /* 開始頁預覽組件 */
-  .preview-strip { padding: 10px 10px 30px 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); width: 120px; transition: background-color 0.3s ease; }
-  .preview-strip-slot { width: 100%; aspect-ratio: 3/2; background: rgba(255,255,255,0.7); border: 1px dashed rgba(0,0,0,0.1); }
+  /* 預覽組件 */
+  .preview-img { max-width: 100%; max-height: 380px; object-fit: contain; border-radius: 8px; box-shadow: var(--shadow-sm); }
+  .preview-strip { padding: 10px 10px 30px 10px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-md); width: 130px; transition: background-color 0.3s ease; border-radius: 2px; }
+  .preview-strip-slot { width: 100%; aspect-ratio: 3/2; background: rgba(255,255,255,0.8); border: 1px dashed rgba(0,0,0,0.15); border-radius: 2px; }
 
   /* ── 視圖 2: Capture ── */
   .capture-layout { display: flex; flex-direction: row; gap: 2rem; width: 100%; max-width: 1000px; height: 100%; align-items: center; justify-content: center; }
@@ -61,43 +64,38 @@
   .video-wrapper { position: relative; width: 100%; max-width: 640px; aspect-ratio: 4/3; background: #000; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md); }
   #cam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
   
-  /* 倒數計時 */
   .countdown-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
   .countdown-text { font-size: 8rem; color: white; font-weight: 600; text-shadow: 0 4px 24px rgba(0,0,0,0.4); opacity: 0; transform: scale(0.5); transition: 0.2s; }
   .countdown-text.pop { opacity: 1; transform: scale(1); animation: popAnim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   @keyframes popAnim { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
   #flash { position: absolute; inset: 0; background: white; opacity: 0; z-index: 20; pointer-events: none; transition: opacity 0.1s; }
 
-  /* 操作區 */
-  .action-row { display: flex; gap: 1rem; margin-top: 1.5rem; width: 100%; max-width: 640px; flex-direction: row; }
+  .action-row { display: flex; gap: 10px; margin-top: 1.5rem; width: 100%; max-width: 640px; flex-direction: row; }
   .btn-action { flex: 1; background: var(--surface-color); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; font-size: 1rem; }
   .btn-action:hover { border-color: var(--accent-color); }
   .btn-primary { background: var(--accent-color); color: white; border: none; }
   .btn-primary:hover { background: #333; }
 
-  /* 掉落預覽列 */
-  .timeline { display: flex; flex-direction: column; gap: 12px; background: var(--surface-color); padding: 1rem; border-radius: 12px; box-shadow: var(--shadow-sm); width: auto; }
-  .film-slot { width: 80px; aspect-ratio: 3/2; background: #eee; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid var(--border-color); }
+  .timeline { display: flex; flex-direction: column; gap: 12px; background: var(--surface-color); padding: 1rem; border-radius: 12px; box-shadow: var(--shadow-sm); width: auto; border: 1px solid var(--border-color); }
+  .film-slot { width: 80px; aspect-ratio: 3/4; background: #eee; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid var(--border-color); }
   .film-slot img { width: 100%; height: 100%; object-fit: cover; }
   .slot-idx { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.6); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; }
   
-  /* 掉落動畫實體 (拍照時) */
   .anim-drop-photo { position: absolute; z-index: 100; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); pointer-events: none; transform-origin: center; animation: dropToSlot 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
   @keyframes dropToSlot { 0% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } 100% { transform: scale(0.15) translateY(300px) rotate(8deg); opacity: 0; } }
 
-  /* ── 視圖 3: Edit (編輯微調) ── */
+  /* ── 視圖 3: Edit ── */
   .edit-layout { display: flex; flex-direction: row; align-items: flex-start; gap: 2rem; width: 100%; max-width: 1200px; height: 100%; }
   
   .canvas-container { flex: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; position: relative; width: 100%; }
+  #editor-canvas { max-width: 100%; max-height: 75vh; box-shadow: var(--shadow-md); cursor: move; touch-action: none; background: transparent; border-radius: 4px; }
   
-  #editor-canvas { max-width: 100%; max-height: 75vh; box-shadow: var(--shadow-md); cursor: move; touch-action: none; background: transparent; }
+  .hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem; background: var(--surface-color); padding: 8px 16px; border-radius: 20px; box-shadow: var(--shadow-sm); text-align: center; border: 1px solid var(--border-color); }
   
-  .hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem; background: var(--surface-color); padding: 8px 16px; border-radius: 20px; box-shadow: var(--shadow-sm); text-align: center; }
-  
-  .tools-panel { flex: 1; width: 100%; max-width: 360px; background: var(--surface-color); padding: 2rem; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 1.5rem; }
+  .tools-panel { flex: 1; width: 100%; max-width: 360px; background: var(--surface-color); padding: 2rem; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 1.5rem; border: 1px solid var(--border-color); }
   .tools-title { font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; }
   
-  /* ── 視圖 4: Pickup (完成掉落動畫) ── */
+  /* ── 視圖 4: Pickup ── */
   .pickup-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; position: relative; }
   .pickup-title { font-size: 1.8rem; font-weight: 600; margin-bottom: 2rem; color: var(--text-primary); text-align: center; opacity: 0; transition: opacity 0.5s 1s; }
   .pickup-title.show { opacity: 1; }
@@ -116,7 +114,7 @@
   .pickup-actions { display: flex; gap: 1rem; opacity: 0; transition: opacity 0.5s; transform: translateY(20px); }
   .pickup-actions.show { opacity: 1; transform: translateY(0); }
 
-  /* Toast 通知 */
+  /* Toast */
   #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-primary); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 500; font-size: 0.9rem; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999; box-shadow: var(--shadow-md); }
   #toast.show { transform: translateX(-50%) translateY(0); }
 </style>
@@ -125,14 +123,12 @@
 
 <div id="toast"></div>
 
-<!-- View 1: 模板與設定 -->
+<!-- View 1: 設定與模板 -->
 <div id="view-start" class="view active">
   <div class="start-container">
     
-    <div class="start-preview-pane">
-      <div id="start-preview-strip" class="preview-strip">
-        <!-- 動態預覽插槽 -->
-      </div>
+    <div class="start-preview-pane" id="start-preview-pane">
+      <!-- 預覽畫面動態生成 -->
     </div>
 
     <div class="start-controls-pane">
@@ -141,35 +137,42 @@
       <div class="config-group">
         <span class="config-label">相紙樣式 (Frame Style)</span>
         <div class="grid-2" id="style-selector">
-          <button class="option-btn active" data-style="classic">經典版型 Classic</button>
+          <button class="option-btn active" data-style="tpl1">經典卡其 (3格)</button>
+          <button class="option-btn" data-style="tpl2">可愛點點 (3格)</button>
+          <button class="option-btn" data-style="tpl3">限時動態 (單格)</button>
+          <button class="option-btn" data-style="builtin">簡約自訂 (多格)</button>
         </div>
       </div>
       
-      <div class="config-group">
-        <span class="config-label">相格數量 (Grid Count)</span>
-        <div class="grid-2" id="grid-selector">
-          <button class="option-btn active" data-count="3">3 格排版</button>
-          <button class="option-btn" data-count="4">4 格排版</button>
+      <!-- 選擇自訂時才顯示 -->
+      <div id="custom-options" style="display: none;">
+        <div class="config-group">
+          <span class="config-label">相格數量 (Grid Count)</span>
+          <div class="grid-3" id="grid-selector">
+            <button class="option-btn" data-count="1">1 格</button>
+            <button class="option-btn active" data-count="3">3 格</button>
+            <button class="option-btn" data-count="4">4 格</button>
+          </div>
+        </div>
+
+        <div class="config-group">
+          <span class="config-label">相紙底色 (Frame Color)</span>
+          <div class="color-picker" id="color-selector">
+            <div class="color-circle active" data-color="#A98259" style="background:#A98259"></div>
+            <div class="color-circle" data-color="#ffffff" style="background:#ffffff"></div>
+            <div class="color-circle" data-color="#111111" style="background:#111111"></div>
+            <div class="color-circle" data-color="#E8D8CE" style="background:#E8D8CE"></div>
+            <div class="color-circle" data-color="#D3D9E2" style="background:#D3D9E2"></div>
+          </div>
         </div>
       </div>
 
-      <div class="config-group">
-        <span class="config-label">相紙底色 (Frame Color)</span>
-        <div class="color-picker" id="color-selector">
-          <div class="color-circle active" data-color="#A98259" style="background:#A98259" title="Khaki"></div>
-          <div class="color-circle" data-color="#ffffff" style="background:#ffffff" title="White"></div>
-          <div class="color-circle" data-color="#111111" style="background:#111111" title="Black"></div>
-          <div class="color-circle" data-color="#f0f0f0" style="background:#f0f0f0" title="Light Gray"></div>
-          <div class="color-circle" data-color="#E8D8CE" style="background:#E8D8CE" title="Warm Beige"></div>
-        </div>
-      </div>
-
-      <button class="btn-start" onclick="app.initTemplate()">建立專屬拍貼 ➝</button>
+      <button class="btn-start" id="btn-start" onclick="app.prepareTemplate()">確認版型並開始 ➝</button>
     </div>
   </div>
 </div>
 
-<!-- View 2: 拍攝與匯入 -->
+<!-- View 2: Capture -->
 <div id="view-capture" class="view">
   <div class="capture-layout">
     <div class="capture-main">
@@ -180,9 +183,9 @@
       </div>
 
       <div class="action-row">
-        <button class="btn-action btn-primary" id="btn-snap">📷 拍攝 (<span id="cap-current">1</span>/<span id="cap-total">3</span>)</button>
+        <button class="btn-action btn-primary" id="btn-snap" style="flex:2;">📷 按下快門 (<span id="cap-current">1</span>/<span id="cap-total">3</span>)</button>
         <label class="btn-action">
-          📁 匯入照片
+          📁 上傳照片
           <input type="file" id="direct-upload" accept="image/*" multiple style="display:none">
         </label>
       </div>
@@ -192,37 +195,37 @@
   </div>
 </div>
 
-<!-- View 3: 編輯與微調 -->
+<!-- View 3: Edit -->
 <div id="view-edit" class="view">
   <div class="edit-layout">
     <div class="canvas-container">
       <canvas id="editor-canvas"></canvas>
-      <div class="hint">💡 游標拖曳可移動相片位置，滾輪可放大縮小 (不脫出框線)</div>
+      <div class="hint">💡 範圍內滑動拖曳位置，滾輪/雙指縮放大小 (已開啟邊界鎖定防穿幫)</div>
     </div>
     
     <div class="tools-panel">
-      <div class="tools-title">調整與輸出</div>
+      <div class="tools-title">影像微調</div>
       
       <div class="config-group">
-        <span class="config-label" style="margin-bottom:0.5rem">色調風格 (Filter)</span>
+        <span class="config-label" style="margin-bottom:0.5rem; text-transform:none;">色調風格 (Filter)</span>
         <div class="grid-2" id="filter-group">
           <button class="option-btn active" data-filter="none">原圖 Normal</button>
           <button class="option-btn" data-filter="grayscale(100%) contrast(1.1)">黑白 B&W</button>
           <button class="option-btn" data-filter="sepia(40%) contrast(1.1) saturate(0.8)">復古 Vintage</button>
-          <button class="option-btn" data-filter="saturate(1.3) contrast(1.05)">鮮豔 Vivid</button>
+          <button class="option-btn" data-filter="saturate(1.3) contrast(1.1)">鮮豔 Vivid</button>
         </div>
       </div>
       
-      <button class="btn-start" id="btn-export" style="margin-top: auto;">完成並列印 ⬇</button>
-      <button class="btn-action" onclick="location.reload()" style="margin-top: 10px; width:100%;">重新製作</button>
+      <button class="btn-start" id="btn-export" style="margin-top: auto; padding: 1rem;">完成並輸出作品 ⬇</button>
+      <button class="btn-action" onclick="location.reload()" style="margin-top: 10px; width:100%;">更換相紙版型</button>
     </div>
   </div>
 </div>
 
-<!-- View 4: Pickup (完成掉落動畫) -->
+<!-- View 4: Pickup -->
 <div id="view-pickup" class="view">
   <div class="pickup-layout">
-    <h2 class="pickup-title" id="pickup-title">✨ 您的專屬拍貼已印出 ✨</h2>
+    <h2 class="pickup-title" id="pickup-title">✨ 您的拍貼已順利印出 ✨</h2>
     
     <div class="photo-result-wrapper">
       <img id="final-photo" class="photo-result" src="" alt="Photostrip">
@@ -240,12 +243,21 @@
 </div>
 
 <script>
+// 註冊版型：全部都設定為 white 去背，因為你上傳的 JPG 照片，中心挖空的預留區皆為白色
+const TEMPLATES = {
+  'tpl1': { src: 'S__121421839.jpg', keyColor: 'white', name: '經典卡其 (3格)' },
+  'tpl2': { src: 'frame.jpg', keyColor: 'white', name: '可愛點點 (3格)' },
+  'tpl3': { src: '限時.jpg', keyColor: 'white', name: '限時動態 (單格)' },
+  'builtin': { src: 'builtin', keyColor: 'none', name: '簡約自訂 (多格)' }
+};
+
 class MinimalBoothEngine {
   constructor() {
     this.state = {
-      frameStyle: 'classic',
-      slotsCount: 3,
+      selectedStyle: 'tpl1',
+      slotsCount: 3, 
       frameColor: '#A98259', 
+      frame: null,
       holes: [], 
       photos: [], 
       currentSlot: 0,
@@ -263,16 +275,17 @@ class MinimalBoothEngine {
     this.ctx = this.canvas.getContext('2d', { alpha: false });
     
     this.bindEvents();
-    this.updateStartPreview(); // 初始化預覽畫面
+    this.updateStartPreview(); 
     this.renderLoop();
   }
 
   bindEvents() {
+    // Start View Config
     document.querySelectorAll('#style-selector .option-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('#style-selector .option-btn').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
-        this.state.frameStyle = e.target.dataset.style;
+        this.state.selectedStyle = e.target.dataset.style;
         this.updateStartPreview();
       });
     });
@@ -295,6 +308,7 @@ class MinimalBoothEngine {
       });
     });
 
+    // Capture & Edit View
     document.getElementById('btn-snap').addEventListener('click', () => this.startSnapSequence());
     document.getElementById('direct-upload').addEventListener('change', e => this.handleDirectUpload(e.target.files));
 
@@ -331,59 +345,235 @@ class MinimalBoothEngine {
     document.getElementById(`view-${viewId}`).classList.add('active');
   }
 
-  /* ── 更新開始頁面預覽 ── */
+  /* ── 狀態驅動的開始預覽畫面 ── */
   updateStartPreview() {
-    const strip = document.getElementById('start-preview-strip');
-    strip.style.backgroundColor = this.state.frameColor;
-    strip.innerHTML = '';
-    
-    for (let i = 0; i < this.state.slotsCount; i++) {
-      const slot = document.createElement('div');
-      slot.className = 'preview-strip-slot';
-      strip.appendChild(slot);
+    const tpl = TEMPLATES[this.state.selectedStyle];
+    const pane = document.getElementById('start-preview-pane');
+    const customOptions = document.getElementById('custom-options');
+
+    if (tpl.src === 'builtin') {
+      customOptions.style.display = 'block';
+      pane.innerHTML = `
+        <div class="preview-strip" style="background-color: ${this.state.frameColor}; width: 140px;">
+          ${Array(this.state.slotsCount).fill('<div class="preview-strip-slot"></div>').join('')}
+        </div>
+      `;
+    } else {
+      customOptions.style.display = 'none';
+      // 確保即使讀不到圖片，也會出現描述文字，不讓畫面空掉
+      pane.innerHTML = `<img src="${tpl.src}" class="preview-img" alt="${tpl.name}">`;
     }
   }
 
-  /* ── 核心：純程式碼動態生成模板 ── */
-  initTemplate() {
-    const N = this.state.slotsCount;
-    
-    const W_total = 1200;
-    const paddingX = 100;
-    const gap = 60;
-    const paddingTop = 120;
-    const paddingBottom = 280; 
-    
-    const holeW = W_total - (paddingX * 2);
-    const holeH = Math.round(holeW * (2 / 3)); 
-    
-    const H_total = paddingTop + (holeH * N) + (gap * (N - 1)) + paddingBottom;
+  /* ── 核心：高品質圖片去背與相格演算 (BFS Chroma Key) ── */
+  async prepareTemplate() {
+    const btn = document.getElementById('btn-start');
+    btn.disabled = true;
+    btn.innerText = '處理圖層與相片矩陣中...';
 
-    this.state.canvasW = W_total;
-    this.state.canvasH = H_total;
-    this.state.holes = [];
+    const tpl = TEMPLATES[this.state.selectedStyle];
 
-    for(let i=0; i<N; i++) {
-      this.state.holes.push({
-        x: paddingX,
-        y: paddingTop + (holeH + gap) * i,
-        w: holeW,
-        h: holeH
-      });
+    if (tpl.src === 'builtin') {
+      this.generateBuiltinTemplate();
+    } else {
+      try {
+        const img = new Image();
+        img.src = tpl.src;
+        
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+
+        const cvs = document.createElement('canvas');
+        cvs.width = img.width; cvs.height = img.height;
+        const ctx = cvs.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+
+        const imgData = ctx.getImageData(0, 0, cvs.width, cvs.height);
+        const data = imgData.data;
+        const sw = cvs.width;
+        const sh = cvs.height;
+        const visited = new Uint8Array(sw * sh);
+        const holes = [];
+
+        // 針對 JPG 的白色洞口進行像素掃描
+        if (tpl.keyColor !== 'none') {
+            const isTarget = (idx) => {
+                const r = data[idx*4], g = data[idx*4+1], b = data[idx*4+2];
+                // 放寬容許度處理 JPG 雜訊邊緣
+                if (tpl.keyColor === 'white') return r > 210 && g > 210 && b > 210;
+                if (tpl.keyColor === 'black') return r < 45 && g < 45 && b < 45;
+                return false;
+            };
+
+            for (let y = 0; y < sh; y++) {
+                for (let x = 0; x < sw; x++) {
+                    const i = y * sw + x;
+                    if (visited[i] || !isTarget(i)) continue;
+
+                    // BFS 找出連續的洞口區塊
+                    let x1 = x, x2 = x, y1 = y, y2 = y;
+                    const queue = [i];
+                    let head = 0;
+                    visited[i] = 1;
+                    const cluster = [i];
+
+                    while (head < queue.length) {
+                        const curr = queue[head++];
+                        const cy = Math.floor(curr / sw);
+                        const cx = curr % sw;
+
+                        if (cx < x1) x1 = cx;
+                        if (cx > x2) x2 = cx;
+                        if (cy < y1) y1 = cy;
+                        if (cy > y2) y2 = cy;
+
+                        const neighbors = [];
+                        if (cx > 0) neighbors.push(curr - 1);
+                        if (cx < sw - 1) neighbors.push(curr + 1);
+                        if (cy > 0) neighbors.push(curr - sw);
+                        if (cy < sh - 1) neighbors.push(curr + sw);
+
+                        for (let n=0; n<neighbors.length; n++) {
+                            const nIdx = neighbors[n];
+                            if (!visited[nIdx] && isTarget(nIdx)) {
+                                visited[nIdx] = 1;
+                                queue.push(nIdx);
+                                cluster.push(nIdx);
+                            }
+                        }
+                    }
+
+                    // 若連續區塊面積大於總面積 0.5%，認定為有效相格
+                    if ((x2 - x1) * (y2 - y1) > sw * sh * 0.005) {
+                        holes.push({ x: x1, y: y1, w: x2 - x1, h: y2 - y1 });
+                        
+                        // 1. 將該相格設為透明
+                        for (let k = 0; k < cluster.length; k++) {
+                            data[cluster[k] * 4 + 3] = 0;
+                        }
+
+                        // 2. 形態學邊緣擴張 (Dilation) 消除邊緣死角與白線
+                        const fringes = [];
+                        for (let k = 0; k < cluster.length; k++) {
+                            const cy = Math.floor(cluster[k] / sw);
+                            const cx = cluster[k] % sw;
+                            for (let dy = -1; dy <= 1; dy++) {
+                                for (let dx = -1; dx <= 1; dx++) {
+                                    if (dx === 0 && dy === 0) continue;
+                                    const ny = cy + dy, nx = cx + dx;
+                                    if (ny >= 0 && ny < sh && nx >= 0 && nx < sw) {
+                                        const nIdx = ny * sw + nx;
+                                        if (data[nIdx * 4 + 3] !== 0) {
+                                            fringes.push(nIdx);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        for (let k = 0; k < fringes.length; k++) {
+                            data[fringes[k] * 4 + 3] = 0;
+                        }
+                    }
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        const processedImg = new Image();
+        processedImg.src = cvs.toDataURL('image/png');
+        await processedImg.decode();
+
+        this.state.frame = processedImg;
+        this.state.canvasW = processedImg.width;
+        this.state.canvasH = processedImg.height;
+
+        this.state.holes = this.mergeHoles(holes, processedImg);
+        this.finalizeTemplateLoad();
+      } catch (e) {
+        this.toast("⚠️ 載入失敗！請確認圖檔與此網頁放在同一資料夾，並透過 Local Server 開啟。");
+        btn.disabled = false;
+        btn.innerText = '確認版型並開始 ➝';
+      }
     }
+  }
 
+  generateBuiltinTemplate() {
+    const N = this.state.slotsCount;
+    const W = 1200;
+    const padX = 100, gap = 60, padTop = 120, padBot = 280;
+    
+    const holeW = W - (padX * 2);
+    // 若為 1格，調整為更長的比例；否則維持 3:2
+    const holeH = N === 1 ? Math.round(holeW * 1.2) : Math.round(holeW * (2 / 3));
+    
+    const H = padTop + (holeH * N) + (gap * (N - 1)) + padBot;
+
+    const cvs = document.createElement('canvas');
+    cvs.width = W; cvs.height = H;
+    const ctx = cvs.getContext('2d');
+    
+    ctx.fillStyle = this.state.frameColor; 
+    ctx.fillRect(0, 0, W, H);
+    
+    this.state.holes = [];
+    ctx.globalCompositeOperation = 'destination-out';
+    
+    for(let i=0; i<N; i++) {
+      const hy = padTop + i * (holeH + gap);
+      ctx.fillRect(padX, hy, holeW, holeH);
+      this.state.holes.push({ x: padX, y: hy, w: holeW, h: holeH });
+    }
+    
+    const processedImg = new Image();
+    processedImg.src = cvs.toDataURL('image/png');
+    processedImg.onload = () => {
+      this.state.frame = processedImg;
+      this.state.canvasW = W;
+      this.state.canvasH = H;
+      this.finalizeTemplateLoad();
+    };
+  }
+
+  finalizeTemplateLoad() {
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-start').innerText = '確認版型並開始 ➝';
+    
+    if(this.state.holes.length === 0) {
+      this.toast("警告：無法辨識相紙中的拍照區塊，請確認照片為白底洞口。");
+      this.state.holes = [{ x: 100, y: 100, w: this.state.canvasW - 200, h: this.state.canvasH - 200 }];
+    }
     this.initCaptureTimeline();
     this.switchView('capture');
     this.openCamera();
   }
 
+  mergeHoles(holes, img) {
+    const merged = [];
+    holes.forEach(h => {
+      let found = false;
+      for (let m of merged) {
+        if (Math.abs(h.x - m.x) < img.width * 0.05 && Math.abs(h.y - m.y) < img.height * 0.03) {
+          const nx1 = Math.min(h.x, m.x), ny1 = Math.min(h.y, m.y), nx2 = Math.max(h.x+h.w, m.x+m.w), ny2 = Math.max(h.y+h.h, m.y+m.h);
+          m.x = nx1; m.y = ny1; m.w = nx2 - nx1; m.h = ny2 - ny1;
+          found = true; break;
+        }
+      }
+      if (!found) merged.push({...h});
+    });
+    return merged.sort((a, b) => (Math.abs(a.y-b.y) < img.height*0.05) ? a.x-b.x : a.y-b.y);
+  }
+
+  /* ── 2. 攝影與動畫 ── */
   initCaptureTimeline() {
     const timeline = document.getElementById('timeline');
     timeline.innerHTML = '';
-    this.state.holes.forEach((_, i) => {
+    this.state.holes.forEach((h, i) => {
       const slot = document.createElement('div');
       slot.className = 'film-slot';
-      slot.innerHTML = `<span class="slot-idx">0${i+1}</span>`;
+      slot.style.aspectRatio = `${h.w}/${h.h}`;
+      slot.innerHTML = `<span class="slot-idx">${i+1}</span>`;
       timeline.appendChild(slot);
     });
     document.getElementById('cap-total').innerText = this.state.holes.length;
@@ -395,7 +585,7 @@ class MinimalBoothEngine {
     try {
       this.state.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 } } });
       document.getElementById('cam-video').srcObject = this.state.stream;
-    } catch(e) { this.toast("相機開啟失敗，請直接使用上傳功能。"); }
+    } catch(e) { this.toast("相機未授權，將關閉視訊畫面，請改用上傳。"); }
   }
 
   async startSnapSequence() {
@@ -418,10 +608,15 @@ class MinimalBoothEngine {
 
     const video = document.getElementById('cam-video');
     const cvs = document.createElement('canvas');
-    cvs.width = video.videoWidth; cvs.height = video.videoHeight;
+    cvs.width = video.videoWidth || 1280; cvs.height = video.videoHeight || 720;
     const ctx = cvs.getContext('2d');
-    ctx.translate(cvs.width, 0); ctx.scale(-1, 1);
-    ctx.drawImage(video, 0, 0);
+    
+    if (this.state.stream) {
+      ctx.translate(cvs.width, 0); ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0);
+    } else {
+      ctx.fillStyle = '#111'; ctx.fillRect(0,0,cvs.width,cvs.height);
+    }
 
     const img = new Image();
     img.src = cvs.toDataURL('image/jpeg');
@@ -444,6 +639,7 @@ class MinimalBoothEngine {
   processImage(img, doAnimation = true) {
     const hole = this.state.holes[this.state.currentSlot];
     
+    // Auto-fit 演算 (Cover 相格)
     const scaleX = hole.w / img.width;
     const scaleY = hole.h / img.height;
     const baseScale = Math.max(scaleX, scaleY);
@@ -459,17 +655,21 @@ class MinimalBoothEngine {
     const timeline = document.getElementById('timeline');
     const slot = timeline.children[this.state.currentSlot];
     
-    if (doAnimation) {
+    if (doAnimation && this.state.stream) {
       const animEl = document.createElement('img');
       animEl.src = img.src;
       animEl.className = 'anim-drop-photo';
       
       const rect = document.getElementById('cap-container').getBoundingClientRect();
+      const targetRect = slot.getBoundingClientRect();
       
       animEl.style.left = `${rect.left}px`;
       animEl.style.top = `${rect.top}px`;
       animEl.style.width = `${rect.width}px`;
       animEl.style.height = `${rect.height}px`;
+      
+      const dropY = targetRect.top - rect.top;
+      animEl.style.setProperty('--drop-y', `${dropY}px`);
       
       document.body.appendChild(animEl);
       setTimeout(() => {
@@ -484,14 +684,14 @@ class MinimalBoothEngine {
     
     if(this.state.currentSlot >= this.state.holes.length) {
       if(this.state.stream) this.state.stream.getTracks().forEach(t => t.stop());
-      setTimeout(() => this.startEdit(), doAnimation ? 800 : 0);
+      setTimeout(() => this.startEdit(), doAnimation && this.state.stream ? 800 : 0);
     } else {
       document.getElementById('cap-current').innerText = this.state.currentSlot + 1;
       document.getElementById('btn-snap').disabled = false;
     }
   }
 
-  /* ── 編輯器渲染 ── */
+  /* ── 3. 編輯器渲染與嚴格邊界鎖定 (Boundary Clamping) ── */
   startEdit() {
     this.canvas.width = this.state.canvasW;
     this.canvas.height = this.state.canvasH;
@@ -512,13 +712,18 @@ class MinimalBoothEngine {
   draw() {
     const { ctx, canvas, state } = this;
     
-    ctx.fillStyle = state.frameColor; 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // 底圖為白，確保去背區域乾淨
+    ctx.fillStyle = "#ffffff"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const filterStr = state.filter;
 
+    // 1. 照片層 (Bottom Masked)
     state.photos.forEach(p => {
       ctx.save();
+      
+      // 依據偵測到的洞口建立裁切路徑 (遮罩)，這可以保持圓角或奇形怪狀洞口的純淨
       ctx.beginPath(); 
       ctx.rect(p.x, p.y, p.w, p.h); 
       ctx.clip();
@@ -536,9 +741,13 @@ class MinimalBoothEngine {
       ctx.drawImage(p.rawImg, dx, dy, rw, rh);
       ctx.restore();
     });
+
+    // 2. 相框層 (Top) 蓋在被 Mask 的相片上方，營造立體感
+    ctx.filter = 'none';
+    ctx.drawImage(state.frame, 0, 0);
   }
 
-  /* ── 互動操作與邊界演算法 ── */
+  /* ── 互動操作與 Boundary Clamping ── */
   getCoord(e) {
     const rect = this.canvas.getBoundingClientRect();
     const scale = this.canvas.width / rect.width;
@@ -547,7 +756,7 @@ class MinimalBoothEngine {
     return { x: (clientX - rect.left) * scale, y: (clientY - rect.top) * scale };
   }
 
-  // 確保相片拖曳或縮放不會離開相格 (不會露出相紙背景)
+  // 嚴格確保照片不會拖出範圍露出底圖邊緣
   clampPhoto(ph) {
     if (ph.scale < 1) ph.scale = 1;
 
@@ -597,11 +806,11 @@ class MinimalBoothEngine {
     }
   }
 
-  /* ── 觸發完成動畫與輸出 ── */
+  /* ── 4. 掉落動畫與輸出 ── */
   triggerPickupAnimation() {
     const btn = document.getElementById('btn-export');
     btn.disabled = true;
-    btn.innerText = 'PROCESSING...';
+    btn.innerText = '處理高畫質輸出...';
 
     this.draw();
     const dataUrl = this.canvas.toDataURL('image/jpeg', 0.95);
@@ -632,10 +841,9 @@ class MinimalBoothEngine {
   downloadFinalImage() {
     if (!this.state.finalDataUrl) return;
     const link = document.createElement('a');
-    link.download = `photostrip_${Date.now()}.jpg`;
+    link.download = `Photostrip_${Date.now()}.jpg`;
     link.href = this.state.finalDataUrl;
     link.click();
-    this.toast("下載完成！快分享至限時動態吧 ✨");
   }
 }
 
