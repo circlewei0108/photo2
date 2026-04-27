@@ -137,8 +137,7 @@
       <div class="config-group">
         <span class="config-label">相紙樣式 (Frame Style)</span>
         <div class="grid-2" id="style-selector">
-          <button class="option-btn active" data-style="tpl1">經典卡其 (3格)</button>
-          <button class="option-btn" data-style="tpl2">可愛點點 (3格)</button>
+          <button class="option-btn active" data-style="tpl2">可愛點點 (3格)</button>
           <button class="option-btn" data-style="tpl3">限時動態 (單格)</button>
           <button class="option-btn" data-style="builtin">簡約自訂 (多格)</button>
         </div>
@@ -243,18 +242,17 @@
 </div>
 
 <script>
-// 註冊版型：全部都設定為 white 去背，因為你上傳的 JPG 照片，中心挖空的預留區皆為白色
+// 註冊版型：PNG 檔若已帶有透明通道將自動辨識，設定 keyColor 作為防錯機制
 const TEMPLATES = {
-  'tpl1': { src: 'S__121421839.jpg', keyColor: 'white', name: '經典卡其 (3格)' },
-  'tpl2': { src: 'frame.jpg', keyColor: 'white', name: '可愛點點 (3格)' },
-  'tpl3': { src: '限時.jpg', keyColor: 'white', name: '限時動態 (單格)' },
+  'tpl2': { src: 'frame.png', keyColor: 'black', name: '可愛點點 (3格)' },
+  'tpl3': { src: '限時.png', keyColor: 'black', name: '限時動態 (單格)' },
   'builtin': { src: 'builtin', keyColor: 'none', name: '簡約自訂 (多格)' }
 };
 
 class MinimalBoothEngine {
   constructor() {
     this.state = {
-      selectedStyle: 'tpl1',
+      selectedStyle: 'tpl2',
       slotsCount: 3, 
       frameColor: '#A98259', 
       frame: null,
