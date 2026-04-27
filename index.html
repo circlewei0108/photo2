@@ -22,65 +22,75 @@
   body { background: var(--bg-color); font-family: 'Inter', 'Noto Sans TC', sans-serif; color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
   
   /* ── View Manager ── */
-  .view { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; padding: 2rem; animation: fadeIn 0.4s ease-out; overflow-y: auto; overflow-x: hidden; }
+  .view { display: none; flex-direction: column; align-items: center; justify-content: flex-start; height: 100%; width: 100%; padding: 1.5rem 1rem; animation: fadeIn 0.4s ease-out; overflow-y: auto; overflow-x: hidden; }
   .view.active { display: flex; }
+  @media(min-width: 600px) { .view { padding: 2rem; justify-content: center; } }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   /* ── 視圖 1: Start (極簡設定頁) ── */
-  .start-container { background: var(--surface-color); padding: 3rem; border-radius: 16px; box-shadow: var(--shadow-md); width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 2rem; align-items: stretch; }
-  @media(min-width: 600px) { .start-container { flex-direction: row; } }
+  .start-container { background: var(--surface-color); padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-md); width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 2rem; align-items: stretch; }
+  @media(min-width: 600px) { .start-container { flex-direction: row; padding: 3rem; } }
   
-  .start-preview-pane { flex: 1; background: var(--bg-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 2rem; min-height: 300px; }
+  .start-preview-pane { flex: 1; background: var(--bg-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 2rem; min-height: 250px; }
   .start-controls-pane { flex: 1; display: flex; flex-direction: column; justify-content: center; }
   
-  .start-title { font-size: 2.5rem; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 2rem; text-align: left; }
+  .start-title { font-size: 2rem; font-weight: 600; letter-spacing: -0.03em; margin-bottom: 1.5rem; text-align: left; }
+  @media(min-width: 600px) { .start-title { font-size: 2.5rem; margin-bottom: 2rem; } }
   
   .config-group { margin-bottom: 1.5rem; }
   .config-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.8rem; display: block; }
   
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .option-btn { padding: 1rem; font-size: 0.95rem; font-weight: 500; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-color); cursor: pointer; color: var(--text-primary); transition: all 0.2s; }
+  .option-btn { padding: 0.8rem; font-size: 0.85rem; font-weight: 500; border: 1px solid var(--border-color); border-radius: 8px; background: var(--surface-color); cursor: pointer; color: var(--text-primary); transition: all 0.2s; }
+  @media(min-width: 600px) { .option-btn { padding: 1rem; font-size: 0.95rem; } }
   .option-btn:hover { border-color: #999; }
   .option-btn.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
 
-  .color-picker { display: flex; gap: 12px; justify-content: flex-start; }
-  .color-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; position: relative; }
+  .color-picker { display: flex; gap: 12px; justify-content: flex-start; flex-wrap: wrap; }
+  .color-circle { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; position: relative; }
+  @media(min-width: 600px) { .color-circle { width: 40px; height: 40px; } }
   .color-circle:hover { transform: scale(1.1); }
   .color-circle.active::after { content: ''; position: absolute; inset: -5px; border: 2px solid var(--accent-color); border-radius: 50%; }
 
-  .btn-start { width: 100%; background: var(--accent-color); color: white; border: none; padding: 1.2rem; font-size: 1.1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-top: auto; }
+  .btn-start { width: 100%; background: var(--accent-color); color: white; border: none; padding: 1rem; font-size: 1.1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-top: 1rem; }
+  @media(min-width: 600px) { .btn-start { padding: 1.2rem; margin-top: auto; } }
   .btn-start:hover { opacity: 0.85; }
 
   /* 開始頁預覽組件 */
-  .preview-strip { padding: 10px 10px 30px 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); width: 120px; transition: background-color 0.3s ease; }
+  .preview-strip { padding: 10px 10px 30px 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); width: 100px; transition: background-color 0.3s ease; }
+  @media(min-width: 600px) { .preview-strip { width: 120px; } }
   .preview-strip-slot { width: 100%; aspect-ratio: 3/2; background: rgba(255,255,255,0.7); border: 1px dashed rgba(0,0,0,0.1); }
 
   /* ── 視圖 2: Capture ── */
-  .capture-layout { display: flex; flex-direction: column; gap: 2rem; width: 100%; max-width: 1000px; height: 100%; align-items: center; justify-content: center; }
-  @media(min-width: 800px) { .capture-layout { flex-direction: row; } }
+  .capture-layout { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 1000px; height: 100%; align-items: center; justify-content: flex-start; }
+  @media(min-width: 800px) { .capture-layout { flex-direction: row; justify-content: center; gap: 2rem; } }
   
   .capture-main { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; }
-  .video-wrapper { position: relative; width: 100%; max-width: 640px; aspect-ratio: 4/3; background: #000; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md); }
+  .video-wrapper { position: relative; width: 100%; max-width: 640px; aspect-ratio: 4/3; background: #000; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-md); }
+  @media(min-width: 800px) { .video-wrapper { border-radius: 16px; } }
   #cam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
   
   /* 倒數計時 */
   .countdown-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10; }
-  .countdown-text { font-size: 8rem; color: white; font-weight: 600; text-shadow: 0 4px 24px rgba(0,0,0,0.4); opacity: 0; transform: scale(0.5); transition: 0.2s; }
+  .countdown-text { font-size: 5rem; color: white; font-weight: 600; text-shadow: 0 4px 24px rgba(0,0,0,0.4); opacity: 0; transform: scale(0.5); transition: 0.2s; }
+  @media(min-width: 600px) { .countdown-text { font-size: 8rem; } }
   .countdown-text.pop { opacity: 1; transform: scale(1); animation: popAnim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   @keyframes popAnim { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
   #flash { position: absolute; inset: 0; background: white; opacity: 0; z-index: 20; pointer-events: none; transition: opacity 0.1s; }
 
   /* 操作區 */
-  .action-row { display: flex; gap: 1rem; margin-top: 1.5rem; width: 100%; max-width: 640px; }
-  .btn-action { flex: 1; background: var(--surface-color); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; }
+  .action-row { display: flex; gap: 1rem; margin-top: 1.5rem; width: 100%; max-width: 640px; flex-direction: row; }
+  .btn-action { flex: 1; background: var(--surface-color); border: 1px solid var(--border-color); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; font-size: 0.9rem; }
+  @media(min-width: 600px) { .btn-action { padding: 1rem; font-size: 1rem; } }
   .btn-action:hover { border-color: var(--accent-color); }
   .btn-primary { background: var(--accent-color); color: white; border: none; }
   .btn-primary:hover { background: #333; }
 
   /* 掉落預覽列 */
-  .timeline { display: flex; flex-direction: row; gap: 12px; background: var(--surface-color); padding: 1rem; border-radius: 12px; box-shadow: var(--shadow-sm); }
-  @media(min-width: 800px) { .timeline { flex-direction: column; } }
-  .film-slot { width: 80px; aspect-ratio: 3/2; background: #eee; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid var(--border-color); }
+  .timeline { display: flex; flex-direction: row; gap: 10px; background: var(--surface-color); padding: 0.8rem; border-radius: 12px; box-shadow: var(--shadow-sm); flex-wrap: wrap; justify-content: center; width: 100%; }
+  @media(min-width: 800px) { .timeline { flex-direction: column; width: auto; padding: 1rem; gap: 12px; } }
+  .film-slot { width: 60px; aspect-ratio: 3/2; background: #eee; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid var(--border-color); }
+  @media(min-width: 800px) { .film-slot { width: 80px; } }
   .film-slot img { width: 100%; height: 100%; object-fit: cover; }
   .slot-idx { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.6); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; }
   
@@ -89,42 +99,32 @@
   @keyframes dropToSlot { 0% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } 100% { transform: scale(0.15) translateY(300px) rotate(8deg); opacity: 0; } }
 
   /* ── 視圖 3: Edit (編輯微調) ── */
-  .edit-layout { display: flex; flex-direction: column; gap: 2rem; width: 100%; max-width: 1200px; height: 100%; }
-  @media(min-width: 900px) { .edit-layout { flex-direction: row; align-items: flex-start; } }
+  .edit-layout { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 1200px; height: auto; }
+  @media(min-width: 900px) { .edit-layout { flex-direction: row; align-items: flex-start; height: 100%; gap: 2rem; } }
   
-  .canvas-container { flex: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; position: relative; }
-  #editor-canvas { max-width: 100%; max-height: 75vh; box-shadow: var(--shadow-md); cursor: move; touch-action: none; background: transparent; }
-  .hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem; background: var(--surface-color); padding: 8px 16px; border-radius: 20px; box-shadow: var(--shadow-sm); }
+  .canvas-container { flex: 2; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 0; position: relative; width: 100%; }
+  @media(min-width: 900px) { .canvas-container { justify-content: center; } }
   
-  .tools-panel { flex: 1; width: 100%; max-width: 360px; background: var(--surface-color); padding: 2rem; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 1.5rem; }
+  /* Canvas 高度限制確保手機端可滾動至下方工具列 */
+  #editor-canvas { max-width: 100%; max-height: 55vh; box-shadow: var(--shadow-md); cursor: move; touch-action: none; background: transparent; }
+  @media(min-width: 900px) { #editor-canvas { max-height: 75vh; } }
+  
+  .hint { font-size: 0.75rem; color: var(--text-secondary); margin-top: 1rem; background: var(--surface-color); padding: 8px 16px; border-radius: 20px; box-shadow: var(--shadow-sm); text-align: center; }
+  @media(min-width: 600px) { .hint { font-size: 0.8rem; } }
+  
+  .tools-panel { flex: 1; width: 100%; max-width: 100%; background: var(--surface-color); padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 1.2rem; }
+  @media(min-width: 900px) { .tools-panel { max-width: 360px; padding: 2rem; gap: 1.5rem; } }
   .tools-title { font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; }
   
   /* ── 視圖 4: Pickup (完成掉落動畫) ── */
   .pickup-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; position: relative; }
-  .pickup-title { font-size: 1.8rem; font-weight: 600; margin-bottom: 2rem; color: var(--text-primary); text-align: center; opacity: 0; transition: opacity 0.5s 1s; }
+  .pickup-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--text-primary); text-align: center; opacity: 0; transition: opacity 0.5s 1s; }
+  @media(min-width: 600px) { .pickup-title { font-size: 1.8rem; margin-bottom: 2rem; } }
   .pickup-title.show { opacity: 1; }
   
-  .photo-result-wrapper { perspective: 1000px; margin-bottom: 2rem; position: relative; z-index: 10; }
-  .photo-result { width: 100%; max-width: 340px; height: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); transform-origin: top center; opacity: 0; border-radius: 2px; }
-  
-  /* 模擬從頂部掉落的物理動畫 */
-  .photo-result.animate { animation: dropAndSwing 1.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-  @keyframes dropAndSwing {
-    0% { transform: translateY(-120vh) rotateX(30deg) rotateZ(-15deg); opacity: 1; }
-    50% { transform: translateY(5vh) rotateX(-10deg) rotateZ(5deg); opacity: 1; }
-    75% { transform: translateY(-2vh) rotateX(5deg) rotateZ(-2deg); opacity: 1; }
-    100% { transform: translateY(0) rotateX(0deg) rotateZ(0deg); opacity: 1; }
-  }
-
-  .pickup-actions { display: flex; gap: 1rem; opacity: 0; transition: opacity 0.5s; transform: translateY(20px); }
-  .pickup-actions.show { opacity: 1; transform: translateY(0); }
-
-  /* Toast 通知 */
-  #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--text-primary); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 500; font-size: 0.9rem; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 9999; box-shadow: var(--shadow-md); }
-  #toast.show { transform: translateX(-50%) translateY(0); }
-</style>
-</head>
-<body>
+  .photo-result-wrapper { perspective: 1000px; margin-bottom: 2rem; position: relative; z-index: 10; width: 100%; display: flex; justify-content: center; }
+  .photo-result { width: 100%; max-width: 280px; height: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); transform-origin: top center; opacity: 0; border-radius: 2px; }
+  @media(min-width: 600px) { .photo-result { max-width: 340px; } }
 
 <div id="toast"></div>
 
